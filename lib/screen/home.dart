@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_rest_api/model/user.dart';
 import 'package:http/http.dart' as http;
 
 class Home extends StatefulWidget {
@@ -11,27 +12,23 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  List<dynamic> users = [];
+  List<User> users = [];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Rest Api Call'),
+        title: const Text('Appel API Rest'),
       ),
       body: ListView.builder(
         itemCount: users.length,
         itemBuilder: (context, index) {
           final user = users[index];
-          final name = user['name']['first'];
-          final email = user['email'];
-          final imageUrl = user['picture']['thumbnail'];
+          final color = user.gender == 'male' ? Colors.green : Colors.red;
           return ListTile(
-            leading: CircleAvatar(
-              child: Image.network(imageUrl),
-            ),
-            title: Text(name),
-            subtitle: Text(email),
+            title: Text(user.email),
+            subtitle: Text(user.phone),
+            tileColor: color,
           );
         },
       ),
@@ -42,15 +39,20 @@ class _HomeState extends State<Home> {
   }
 
   void fetchUsers() async {
-    print('fetchusers called');
+    print('fetchUsers appelé');
     const url = 'https://randomuser.me/api/?results=100';
     final uri = Uri.parse(url);
     final response = await http.get(uri);
     final body = response.body;
     final json = jsonDecode(body);
+    final results = json['results'] as List<dynamic>;
+    final transformed = results.map((e) {
+      return User.fromJson(e);
+    }).toList();
+
     setState(() {
-      users = json['results'];
+      users = transformed;
     });
-    print('fetchUsers completed');
+    print('fetchUsers terminé');
   }
 }
